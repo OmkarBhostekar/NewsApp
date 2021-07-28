@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1059069190873",
+    "project_id": "newsapp-d1e4a",
+    "storage_bucket": "newsapp-d1e4a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1059069190873:android:293ae9d5db27f5bf1054c8",
+        "android_client_info": {
+          "package_name": "com.omkarcodes.newsapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1059069190873-srdv88uv0fjnem814rfjfvkg072qveq9.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBe91jNcHcxDDWiR4LlUVCUFF3V_2bxbg0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1059069190873-srdv88uv0fjnem814rfjfvkg072qveq9.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
