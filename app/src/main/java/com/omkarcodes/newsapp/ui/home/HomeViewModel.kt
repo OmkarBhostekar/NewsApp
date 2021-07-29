@@ -20,6 +20,10 @@ class HomeViewModel @Inject constructor(
     private val repository: NewsRepository
 ) : ViewModel() {
 
-    fun getNews(country: String) = repository.getNews(country).cachedIn(viewModelScope)
+    fun getTopHeadlines(country: String,admobEnabled: Boolean)
+        = repository.getTopHeadlines(country,admobEnabled).cachedIn(viewModelScope)
+
+    fun getCategoryNews(category: String,admobEnabled: Boolean)
+        = repository.getCategoryNews(category,admobEnabled).cachedIn(viewModelScope)
 
 }

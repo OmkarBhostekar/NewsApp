@@ -11,14 +11,20 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
 import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.omkarcodes.newsapp.data.models.Article
+import com.omkarcodes.newsapp.data.models.NewsType
 import com.omkarcodes.newsapp.databinding.ItemFeedAdBinding
 import com.omkarcodes.newsapp.databinding.ItemNewsBinding
+import kotlinx.coroutines.coroutineScope
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
-class NewsFeedAdapter : PagingDataAdapter<Article,NewsFeedAdapter.NewsViewHolder>(NEWS_COMPARATOR) {
+class NewsFeedAdapter(
+    val listener: OnClickListener
+) : PagingDataAdapter<Article,NewsFeedAdapter.NewsViewHolder>(NEWS_COMPARATOR) {
 
     companion object {
         const val NEWS_VIEW_TYPE = 1
@@ -33,9 +39,8 @@ class NewsFeedAdapter : PagingDataAdapter<Article,NewsFeedAdapter.NewsViewHolder
             }
         }
     }
-
     override fun getItemViewType(position: Int): Int {
-        return if(position % 5 == 0) NATIVE_AD_VIEW_TYPE else NEWS_VIEW_TYPE
+        return if(getItem(position)?.type == NewsType.AD) NATIVE_AD_VIEW_TYPE else NEWS_VIEW_TYPE
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsViewHolder {
@@ -67,10 +72,11 @@ class NewsFeedAdapter : PagingDataAdapter<Article,NewsFeedAdapter.NewsViewHolder
                 // Show News
                 val news = getItem(position)
                 itemNewsBinding?.let { binding ->
-//                    Glide.with(binding!!.root.context).load(news?.urlToImage).into(binding.ivThumbnail)
+                    binding.root.setOnClickListener { listener.onNewsClick(news?.url,news?.title) }
+                    Glide.with(binding.root.context).load(news?.urlToImage).into(binding.ivThumbnail)
                     binding.tvTitle.text = news?.title
-                    binding.tvSource.text = news?.source?.name
-                    binding.tvTimestamp.text = news?.publishedAt?.let { getTimeStamp(it) } ?: run { "Just Now" }
+                    binding.tvSource.text = "- ${news?.source?.name}"
+                    binding.tvTimestamp.text = news?.publishedAt ?: "Just Now"
                 }
             }else{
                 // Show ad
@@ -89,32 +95,14 @@ class NewsFeedAdapter : PagingDataAdapter<Article,NewsFeedAdapter.NewsViewHolder
                         })
                         .withNativeAdOptions(NativeAdOptions.Builder().build())
                         .build()
+
                     adLoader.loadAd(AdRequest.Builder().build())
                 }
             }
         }
     }
 
-    private fun getTimeStamp(publishedAt: String): String {
-        return ""
-//        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-//        val dateInMillis = sdf.parse(publishedAt)?.time ?: 0L
-//        val sec = (System.currentTimeMillis() - dateInMillis) / 1000
-//        return if (sec < 60 )
-//            "$sec seconds ago"
-//        else{
-//            val min = sec / 60
-//            if (min < 60)
-//                "$min minutes ago"
-//            else{
-//                val hour = min / 60
-//                if (hour < 24)
-//                    "$hour hours ago"
-//                else{
-//                    val days = hour / 24
-//                    "$days days ago"
-//                }
-//            }
-//        }
+    interface OnClickListener{
+        fun onNewsClick(url: String?,title: String?)
     }
 }

@@ -5,4 +5,14 @@ object Constants {
     const val API_KEY = "dd23892568ae45498e1deb1445287dc5"
     const val BASE_URL = "https://newsapi.org"
 
+    val HOME_TABS = listOf(
+        "Top Headlines",
+        "Health",
+        "Technology",
+        "Entertainment",
+        "Gaming",
+        "Politics",
+        "Food",
+        "Art",
+    )
 }

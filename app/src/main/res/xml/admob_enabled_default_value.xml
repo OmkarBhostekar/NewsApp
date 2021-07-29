@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<defaultsMap>
+    <entry>
+        <key>admob_enabled</key>
+        <value>true</value>
+    </entry>
+    <entry>
+        <key>user</key>
+        <value>saurabh</value>
+    </entry>
+</defaultsMap>
