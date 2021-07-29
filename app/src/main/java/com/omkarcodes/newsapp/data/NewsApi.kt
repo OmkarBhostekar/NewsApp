@@ -1,0 +1,17 @@
+package com.omkarcodes.newsapp.data
+
+import com.omkarcodes.newsapp.data.models.NewsResponse
+import retrofit2.Response
+import retrofit2.http.GET
+import retrofit2.http.Query
+
+interface NewsApi {
+
+    @GET("/v2/top-headlines")
+    suspend fun getNews(
+        @Query("country") country: String = "in",
+        @Query("apiKey") apiKey: String,
+        @Query("page") page: Int,
+    ) : NewsResponse
+
+}
