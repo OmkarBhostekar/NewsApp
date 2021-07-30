@@ -8,8 +8,10 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.omkarcodes.newsapp.R
+import com.omkarcodes.newsapp.data.models.Article
 import com.omkarcodes.newsapp.databinding.FragmentCategoryBinding
 import com.omkarcodes.newsapp.ui.MainActivity
 import com.omkarcodes.newsapp.ui.home.HomeViewModel
@@ -21,9 +23,10 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class CategoryPagerFragment : Fragment(R.layout.fragment_category), NewsFeedAdapter.OnClickListener{
 
-    fun newInstance(type: String): CategoryPagerFragment{
+    fun newInstance(type: String,admobEnabled: Boolean): CategoryPagerFragment{
         val args = Bundle()
         args.putString("type",type)
+        args.putBoolean("admobEnabled",admobEnabled)
         val fragment = CategoryPagerFragment()
         fragment.arguments = args
         return fragment
@@ -34,10 +37,14 @@ class CategoryPagerFragment : Fragment(R.layout.fragment_category), NewsFeedAdap
         get() = _binding!!
     private val viewModel: HomeViewModel by viewModels()
     lateinit var newsFeedAdapter: NewsFeedAdapter
+    private var news: PagingData<Article>? = null
+    private var newsLoaded = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentCategoryBinding.bind(view)
+
+        val admobEnabled = arguments?.getBoolean("admobEnabled",false)!!
 
         val type = arguments?.getString("type","top")
 
@@ -52,16 +59,25 @@ class CategoryPagerFragment : Fragment(R.layout.fragment_category), NewsFeedAdap
             }
         }
 
-        if (type == "Top Headlines")
-            getTopHeadlines(true,(activity as MainActivity).countryCode)
-        else
-            getCategoryNews(type!!,true)
+        if (newsLoaded){
+            lifecycleScope.launch {
+                newsFeedAdapter.submitData(viewLifecycleOwner.lifecycle,news!!)
+            }
+        }else{
+            if (type == "Top Headlines")
+                getTopHeadlines(admobEnabled,(activity as MainActivity).countryCode)
+            else
+                getCategoryNews(type!!,admobEnabled)
+        }
+
     }
 
     private fun getCategoryNews(type: String,admobEnabled: Boolean) {
         lifecycleScope.launch {
             viewModel.getCategoryNews(category = type,admobEnabled = admobEnabled).collectLatest { pagingData ->
-                newsFeedAdapter.submitData(viewLifecycleOwner.lifecycle,pagingData)
+                newsLoaded = true
+                news = pagingData
+                newsFeedAdapter.submitData(viewLifecycleOwner.lifecycle,news!!)
             }
         }
     }
@@ -69,7 +85,9 @@ class CategoryPagerFragment : Fragment(R.layout.fragment_category), NewsFeedAdap
     private fun getTopHeadlines(admobEnabled: Boolean,country: String) {
         lifecycleScope.launch {
             viewModel.getTopHeadlines(country = country,admobEnabled = admobEnabled).collectLatest { pagingData ->
-                newsFeedAdapter.submitData(viewLifecycleOwner.lifecycle,pagingData)
+                newsLoaded = true
+                news = pagingData
+                newsFeedAdapter.submitData(viewLifecycleOwner.lifecycle,news!!)
             }
         }
     }

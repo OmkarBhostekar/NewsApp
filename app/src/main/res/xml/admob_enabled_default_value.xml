@@ -2,10 +2,6 @@
 <defaultsMap>
     <entry>
         <key>admob_enabled</key>
-        <value>true</value>
-    </entry>
-    <entry>
-        <key>user</key>
-        <value>saurabh</value>
+        <value>false</value>
     </entry>
 </defaultsMap>

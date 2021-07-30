@@ -15,10 +15,12 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.mediation.UnifiedNativeAdMapper
 import com.google.android.gms.ads.nativead.NativeAdOptions
+import com.omkarcodes.newsapp.R
 import com.omkarcodes.newsapp.data.models.Article
 import com.omkarcodes.newsapp.data.models.NewsType
 import com.omkarcodes.newsapp.databinding.ItemFeedAdBinding
 import com.omkarcodes.newsapp.databinding.ItemNewsBinding
+import com.omkarcodes.newsapp.utils.toTimeAgo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -78,10 +80,10 @@ class NewsFeedAdapter(
                 val news = getItem(position)
                 itemNewsBinding?.let { binding ->
                     binding.root.setOnClickListener { listener.onNewsClick(news?.url,news?.title) }
-                    Glide.with(binding.root.context).load(news?.urlToImage).into(binding.ivThumbnail)
+                    Glide.with(binding.root.context).load(news?.urlToImage).placeholder(R.drawable.ic_news).into(binding.ivThumbnail)
                     binding.tvTitle.text = news?.title
                     binding.tvSource.text = "- ${news?.source?.name}"
-                    binding.tvTimestamp.text = news?.publishedAt ?: "Just Now"
+                    binding.tvTimestamp.text = news?.publishedAt?.toTimeAgo()
                 }
             }else{
                 // Show ad

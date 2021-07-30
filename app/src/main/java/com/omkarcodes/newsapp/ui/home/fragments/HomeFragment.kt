@@ -30,24 +30,28 @@ class HomeFragment : Fragment(R.layout.fragment_home){
     private var _binding: FragmentHomeBinding? = null
     private val binding: FragmentHomeBinding
         get() = _binding!!
+    private var admobEnabled = false
     private lateinit var firebaseRemoteConfig: FirebaseRemoteConfig
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-//        fetchRemoteConfig()
-    }
+    private var remoteConfigChecked = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentHomeBinding.bind(view)
 
+        fetchRemoteConfig()
+
+        if (remoteConfigChecked)
+            initLayout()
+    }
+
+    private fun initLayout() {
         binding.apply {
             tabLayout.apply {
                 HOME_TABS.forEach {
                     addTab(newTab().setText(it))
                 }
             }
-            vpCategories.adapter = HomePagerAdapter(this@HomeFragment, HOME_TABS)
+            vpCategories.adapter = HomePagerAdapter(this@HomeFragment, HOME_TABS,admobEnabled)
 
             tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener{
                 override fun onTabSelected(tab: TabLayout.Tab?) {
@@ -68,37 +72,26 @@ class HomeFragment : Fragment(R.layout.fragment_home){
         }
     }
 
-    //    private fun getAdmobEnabledValue() {
-//        admobEnabled = firebaseRemoteConfig.getBoolean("admob_enabled")
-//        Toast.makeText(requireContext(), admobEnabled.toString(), Toast.LENGTH_SHORT).show()
-//        getNewsData(admobEnabled)
-//    }
-
-
-
-//    private fun fetchRemoteConfig() {
-//        firebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
-//        val remoteConfigSettings = FirebaseRemoteConfigSettings.Builder()
-//            .setFetchTimeoutInSeconds(10)
-//            .build()
-//        firebaseRemoteConfig.setDefaultsAsync(R.xml.admob_enabled_default_value)
-//            .addOnCompleteListener {
-//                firebaseRemoteConfig.setConfigSettingsAsync(remoteConfigSettings)
-//                    .addOnCompleteListener {
-//                        if (it.isSuccessful){
-//                            firebaseRemoteConfig.fetchAndActivate()
-//                                .addOnCompleteListener { task ->
-//                                    if (task.isSuccessful)
-//                                        getAdmobEnabledValue()
-//                                }
-//                        }else {
-//                            Toast.makeText(requireContext(), "Error", Toast.LENGTH_SHORT).show()
-//                            getNewsData(admobEnabled)
-//                        }
-//                    }
-//            }
-//
-//    }
+    private fun fetchRemoteConfig() {
+        if (!remoteConfigChecked){
+            firebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
+            val remoteConfigSettings = FirebaseRemoteConfigSettings.Builder()
+                .setMinimumFetchIntervalInSeconds(1)
+                .build()
+            firebaseRemoteConfig.setConfigSettingsAsync(remoteConfigSettings)
+            firebaseRemoteConfig.setDefaultsAsync(R.xml.admob_enabled_default_value)
+            firebaseRemoteConfig.fetchAndActivate()
+                .addOnSuccessListener {
+                    admobEnabled = firebaseRemoteConfig.getBoolean("admob_enabled")
+                    initLayout()
+                }
+                .addOnFailureListener {
+                    // If fail to get remote config we should show ui with admobEnabled = false
+                    initLayout()
+                }
+            remoteConfigChecked = true
+        }
+    }
 
     override fun onDestroy() {
         super.onDestroy()
