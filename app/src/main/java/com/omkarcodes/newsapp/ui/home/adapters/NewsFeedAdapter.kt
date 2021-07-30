@@ -2,6 +2,8 @@ package com.omkarcodes.newsapp.ui.home.adapters
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.lifecycle.LifecycleCoroutineScope
+import androidx.lifecycle.LifecycleOwner
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -17,13 +19,16 @@ import com.omkarcodes.newsapp.data.models.Article
 import com.omkarcodes.newsapp.data.models.NewsType
 import com.omkarcodes.newsapp.databinding.ItemFeedAdBinding
 import com.omkarcodes.newsapp.databinding.ItemNewsBinding
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.coroutines.coroutineContext
 
 class NewsFeedAdapter(
-    val listener: OnClickListener
+    val listener: OnClickListener,
+    val lifecycleScope: LifecycleCoroutineScope
 ) : PagingDataAdapter<Article,NewsFeedAdapter.NewsViewHolder>(NEWS_COMPARATOR) {
 
     companion object {
@@ -81,22 +86,24 @@ class NewsFeedAdapter(
             }else{
                 // Show ad
                 itemFeedAdBinding?.let {
-                    val adLoader = AdLoader.Builder(itemFeedAdBinding!!.root.context,"ca-app-pub-3940256099942544/2247696110")
-                        .forNativeAd { nativeAd ->
-                            val styles = NativeTemplateStyle.Builder()
-                                .build()
-                            itemFeedAdBinding!!.adView.setStyles(styles)
-                            itemFeedAdBinding!!.adView.setNativeAd(nativeAd)
-                        }
-                        .withAdListener(object: AdListener(){
-                            override fun onAdFailedToLoad(p0: LoadAdError) {
-                                super.onAdFailedToLoad(p0)
+                    lifecycleScope.launch(Dispatchers.Main) {
+                        val adLoader = AdLoader.Builder(itemFeedAdBinding!!.root.context,"ca-app-pub-3940256099942544/2247696110")
+                            .forNativeAd { nativeAd ->
+                                val styles = NativeTemplateStyle.Builder()
+                                    .build()
+                                itemFeedAdBinding!!.adView.setStyles(styles)
+                                itemFeedAdBinding!!.adView.setNativeAd(nativeAd)
                             }
-                        })
-                        .withNativeAdOptions(NativeAdOptions.Builder().build())
-                        .build()
+                            .withAdListener(object: AdListener(){
+                                override fun onAdFailedToLoad(p0: LoadAdError) {
+                                    super.onAdFailedToLoad(p0)
+                                }
+                            })
+                            .withNativeAdOptions(NativeAdOptions.Builder().build())
+                            .build()
 
-                    adLoader.loadAd(AdRequest.Builder().build())
+                        adLoader.loadAd(AdRequest.Builder().build())
+                    }
                 }
             }
         }

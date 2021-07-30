@@ -31,7 +31,6 @@
             app:nullable="true" />
         <deepLink
             android:id="@+id/deepLink"
-            android:autoVerify="true"
-            app:uri="https://news.app?title={title}&amp;url={url}" />
+            app:uri="schema://newsapp.com/view?title={title}&amp;url={url}" />
     </fragment>
 </navigation>

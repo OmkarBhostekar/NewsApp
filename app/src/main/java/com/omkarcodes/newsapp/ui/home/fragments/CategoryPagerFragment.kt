@@ -2,13 +2,16 @@ package com.omkarcodes.newsapp.ui.home.fragments
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.omkarcodes.newsapp.R
 import com.omkarcodes.newsapp.databinding.FragmentCategoryBinding
+import com.omkarcodes.newsapp.ui.MainActivity
 import com.omkarcodes.newsapp.ui.home.HomeViewModel
 import com.omkarcodes.newsapp.ui.home.adapters.NewsFeedAdapter
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,7 +24,7 @@ class CategoryPagerFragment : Fragment(R.layout.fragment_category), NewsFeedAdap
     fun newInstance(type: String): CategoryPagerFragment{
         val args = Bundle()
         args.putString("type",type)
-        val fragment = this
+        val fragment = CategoryPagerFragment()
         fragment.arguments = args
         return fragment
     }
@@ -38,18 +41,21 @@ class CategoryPagerFragment : Fragment(R.layout.fragment_category), NewsFeedAdap
 
         val type = arguments?.getString("type","top")
 
-        newsFeedAdapter = NewsFeedAdapter(this)
+        newsFeedAdapter = NewsFeedAdapter(this,lifecycleScope)
 
         binding.rvNews.apply {
             layoutManager = LinearLayoutManager(requireContext())
             adapter = newsFeedAdapter
             setHasFixedSize(true)
+            newsFeedAdapter.addLoadStateListener { loadState ->
+                binding.progressBar.isVisible = loadState.source.refresh == LoadState.Loading
+            }
         }
 
         if (type == "Top Headlines")
-            getTopHeadlines(false)
+            getTopHeadlines(true,(activity as MainActivity).countryCode)
         else
-            getCategoryNews(type!!,false)
+            getCategoryNews(type!!,true)
     }
 
     private fun getCategoryNews(type: String,admobEnabled: Boolean) {
@@ -60,9 +66,9 @@ class CategoryPagerFragment : Fragment(R.layout.fragment_category), NewsFeedAdap
         }
     }
 
-    private fun getTopHeadlines(admobEnabled: Boolean) {
+    private fun getTopHeadlines(admobEnabled: Boolean,country: String) {
         lifecycleScope.launch {
-            viewModel.getTopHeadlines(country = "in",admobEnabled = admobEnabled).collectLatest { pagingData ->
+            viewModel.getTopHeadlines(country = country,admobEnabled = admobEnabled).collectLatest { pagingData ->
                 newsFeedAdapter.submitData(viewLifecycleOwner.lifecycle,pagingData)
             }
         }
